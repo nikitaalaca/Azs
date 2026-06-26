@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>АЗС • Очереди и топливо</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+      margin: 0;
+    }
+
+    /* Главный контейнер в стиле тёмного Apple Music */
+    .app {
+      max-width: 420px;
+      width: 100%;
+      height: 780px;
+      background: #121214;
+      border-radius: 44px;
+      box-shadow: 
+        0 30px 60px rgba(0,0,0,0.7),
+        0 0 0 1px rgba(255,255,255,0.08),
+        inset 0 0 0 1px rgba(255,255,255,0.03);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      position: relative;
+    }
+
+    /* Динамический градиентный фон */
+    .app::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: -20%;
+      width: 140%;
+      height: 140%;
+      background: radial-gradient(circle at 30% 40%, rgba(255,149,0,0.12) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 80%, rgba(0,122,255,0.1) 0%, transparent 50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* Хедер */
+    .header {
+      padding: 24px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.7px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header h1 i {
+      background: linear-gradient(135deg, #ff9f0a, #ff6b00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 28px;
+    }
+    .location-pill {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(15px);
+      border-radius: 30px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #e5e5e7;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .location-pill i {
+      color: #ff9f0a;
+      font-size: 14px;
+    }
+
+    .status-row {
+      margin: 5px 20px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #98989e;
+      font-size: 14px;
+    }
+    .refresh-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #ffffff;
+      font-weight: 500;
+      font-size: 14px;
+      padding: 10px 18px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: 0.2s;
+    }
+    .refresh-btn:active {
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* Список АЗС */
+    .stations-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Карточка АЗС в стиле неоморфизм */
+    .station-card {
+      background: rgba(30,30,32,0.85);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+      transition: transform 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .station-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .station-name {
+      font-weight: 600;
+      font-size: 18px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .distance {
+      font-size: 13px;
+      color: #aeaeb2;
+      background: rgba(255,255,255,0.06);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .queue-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .queue-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 30px;
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 15px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .queue-badge i { font-size: 16px; }
+    .queue-low { color: #30d158; border-color: rgba(48,209,88,0.3); }
+    .queue-medium { color: #ff9f0a; border-color: rgba(255,159,10,0.3); }
+    .queue-high { color: #ff453a; border-color: rgba(255,69,58,0.3); }
+    .queue-none { color: #8e8e93; }
+
+    .expire-tag {
+      font-size: 11px;
+      background: rgba(255,255,255,0.08);
+      padding: 4px 10px;
+      border-radius: 12px;
+      color: #aeaeb2;
+    }
+
+    .fuel-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .fuel-chip {
+      background: rgba(255,255,255,0.04);
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #dcdcde;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .fuel-chip.missing {
+      opacity: 0.45;
+      text-decoration: line-through;
+      color: #8e8e93;
+    }
+
+    .action-btn {
+      background: #ff9f0a;
+      border: none;
+      color: #000000;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 12px 20px;
+      border-radius: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: 0.2s;
+      margin-top: 4px;
+      box-shadow: 0 6px 14px rgba(255,159,10,0.35);
+    }
+    .action-btn:active { background: #ffb340; }
+
+    .footer-note {
+      padding: 14px 20px;
+      font-size: 12px;
+      color: #636366;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Модальное окно */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+      visibility: hidden;
+      opacity: 0;
+      transition: 0.25s;
+    }
+    .modal-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+    .modal-sheet {
+      background: #1c1c1e;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 32px 32px 0 0;
+      padding: 28px 24px 34px;
+      box-shadow: 0 -15px 40px rgba(0,0,0,0.8);
+      transform: translateY(100%);
+      transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .active .modal-sheet {
+      transform: translateY(0);
+    }
+    .modal-handle {
+      width: 40px; height: 5px; background: #48484a; border-radius: 3px; margin: 0 auto 20px;
+    }
+    .modal-title {
+      font-size: 22px; font-weight: 700; color: white; margin-bottom: 18px;
+    }
+    .queue-options {
+      display: flex; gap: 10px; margin-bottom: 20px;
+    }
+    .queue-opt {
+      flex:1; text-align: center; padding: 12px 6px; border-radius: 20px; background: #2c2c2e; font-weight: 600; color: #ccc; cursor: pointer; border: 1px solid transparent;
+    }
+    .queue-opt.selected { background: #ff9f0a; color: #000; border-color: #ff9f0a; }
+    .fuel-checkboxes {
+      display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;
+    }
+    .fuel-check {
+      background: #2c2c2e; padding: 10px 18px; border-radius: 24px; display: flex; align-items: center; gap: 8px; color: white;
+    }
+    .save-btn {
+      background: #ff9f0a; color: black; border: none; width: 100%; padding: 16px; border-radius: 34px; font-weight: 700; font-size: 17px; margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="content">
+    <div class="header">
+      <h1><i class="fas fa-gas-pump"></i> АЗС</h1>
+      <div class="location-pill" id="locationDisplay">
+        <i class="fas fa-location-dot"></i> <span id="cityName">Поиск...</span>
+      </div>
+    </div>
+    <div class="status-row">
+      <span><i class="far fa-clock"></i> Актуальность 30 мин</span>
+      <button class="refresh-btn" id="refreshGeoBtn"><i class="fas fa-sync-alt"></i> Гео</button>
+    </div>
+    <div class="stations-list" id="stationsContainer"></div>
+    <div class="footer-note">
+      ⏱ Данные устаревают экспоненциально (полураспад 30 мин)
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalStationTitle">АЗС</div>
+    <div style="color:#aaa; margin-bottom:8px;">Размер очереди:</div>
+    <div class="queue-options" id="queueOptions">
+      <div class="queue-opt" data-queue="low"><i class="fas fa-user-check"></i> Малая</div>
+      <div class="queue-opt" data-queue="medium"><i class="fas fa-user-friends"></i> Средняя</div>
+      <div class="queue-opt" data-queue="high"><i class="fas fa-users"></i> Большая</div>
+    </div>
+    <div style="color:#aaa; margin:16px 0 8px;">Наличие топлива (снимите отметку, если нет):</div>
+    <div class="fuel-checkboxes" id="fuelCheckboxes"></div>
+    <button class="save-btn" id="saveModalBtn">Сохранить</button>
+    <button style="background:transparent; border:none; color:#ff9f0a; width:100%; margin-top:14px; font-size:15px;" id="closeModalBtn">Отмена</button>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const STORAGE_KEY = 'azs_fuel_app';
+    const FUEL_TYPES = ['АИ-92', 'АИ-95', 'АИ-98', 'ДТ', 'Газ'];
+    let stations = [];
+    let currentLat = null, currentLon = null, currentCity = 'Москва';
+    let editingStationId = null;
+
+    function defaultStations() {
+      return [
+        { id:'s1', name:'Газпромнефть №42', lat:55.7558, lon:37.6173, queue:null, queueUpdatedAt:null, fuels:{'АИ-92':true,'АИ-95':true,'АИ-98':false,'ДТ':true,'Газ':false} },
+        { id:'s2', name:'Лукойл №15', lat:55.765, lon:37.625, queue:'medium', queueUpdatedAt:Date.now()-1200000, fuels:{'АИ-92':true,'АИ-95':true,'АИ-98':true,'ДТ':true,'Газ':true} },
+        { id:'s3', name:'Роснефть №7', lat:55.745, lon:37.605, queue:'high', queueUpdatedAt:Date.now()-600000, fuels:{'АИ-92':false,'АИ-95':true,'АИ-98':false,'ДТ':true,'Газ':false} },
+        { id:'s4', name:'Татнефть 22', lat:55.77, lon:37.64, queue:null, queueUpdatedAt:null, fuels:{'АИ-92':true,'АИ-95':false,'АИ-98':false,'ДТ':true,'Газ':true} }
+      ];
+    }
+
+    function loadStations() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try { stations = JSON.parse(stored); } catch(e){ stations = defaultStations(); }
+      } else stations = defaultStations();
+      stations.forEach(s => { if(!s.fuels) s.fuels = {}; FUEL_TYPES.forEach(f => { if(s.fuels[f]===undefined) s.fuels[f]=true; }); });
+      saveStations();
+    }
+    function saveStations() { localStorage.setItem(STORAGE_KEY, JSON.stringify(stations)); }
+
+    function calcDist(lat1,lon1,lat2,lon2) {
+      const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+      const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+      return (R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))).toFixed(1);
+    }
+
+    function freshnessWeight(updatedAt) {
+      if(!updatedAt) return 0;
+      const min = (Date.now()-updatedAt)/60000;
+      return Math.max(0, Math.pow(2, -min/30));
+    }
+
+    function renderStations() {
+      const container = document.getElementById('stationsContainer');
+      let sorted = [...stations];
+      if(currentLat) sorted.sort((a,b)=>parseFloat(calcDist(currentLat,currentLon,a.lat,a.lon))-parseFloat(calcDist(currentLat,currentLon,b.lat,b.lon)));
+      
+      container.innerHTML = sorted.map(s=>{
+        const dist = currentLat ? calcDist(currentLat,currentLon,s.lat,s.lon) : '?';
+        const w = freshnessWeight(s.queueUpdatedAt);
+        const queueText = s.queue ? {low:'Маленькая',medium:'Средняя',high:'Большая'}[s.queue] : 'Нет данных';
+        const queueClass = s.queue ? `queue-${s.queue}` : 'queue-none';
+        const timeStr = s.queueUpdatedAt ? Math.floor((Date.now()-s.queueUpdatedAt)/60000)+' мин' : '';
+        const fuelsHtml = FUEL_TYPES.map(f=>`<span class="fuel-chip ${s.fuels[f]===false?'missing':''}">${f} ${s.fuels[f]===false?'<i class="fas fa-times"></i>':'<i class="fas fa-check"></i>'}</span>`).join('');
+        return `<div class="station-card">
+          <div class="station-header"><span class="station-name"><i class="fas fa-gas-pump" style="color:#ff9f0a;"></i> ${s.name}</span><span class="distance">${dist} км</span></div>
+          <div class="queue-area"><span class="queue-badge ${queueClass}"><i class="fas fa-users"></i> ${queueText}</span>${w>0 && w<0.6?`<span class="expire-tag">уточняется</span>`:''} ${timeStr?`<span style="color:#8e8e93;font-size:12px;">${timeStr} назад</span>`:''}</div>
+          <div class="fuel-row">${fuelsHtml}</div>
+          <button class="action-btn" data-edit="${s.id}"><i class="fas fa-pen"></i> Обновить данные</button>
+        </div>`;
+      }).join('');
+      document.querySelectorAll('.action-btn').forEach(b=>b.addEventListener('click',e=>openModal(b.dataset.edit)));
+    }
+
+    function openModal(id) {
+      const s = stations.find(x=>x.id===id); if(!s) return;
+      editingStationId = id;
+      document.getElementById('modalStationTitle').textContent = s.name;
+      document.querySelectorAll('#queueOptions .queue-opt').forEach(o=>o.classList.toggle('selected', o.dataset.queue===s.queue));
+      const fuelDiv = document.getElementById('fuelCheckboxes');
+      fuelDiv.innerHTML = FUEL_TYPES.map(f=>`<label class="fuel-check"><input type="checkbox" data-fuel="${f}" ${s.fuels[f]!==false?'checked':''}> ${f}</label>`).join('');
+      document.getElementById('editModal').classList.add('active');
+    }
+    function closeModal(){ document.getElementById('editModal').classList.remove('active'); }
+
+    document.getElementById('queueOptions').addEventListener('click',e=>{
+      const opt = e.target.closest('.queue-opt'); if(!opt) return;
+      document.querySelectorAll('#queueOptions .queue-opt').forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+    document.getElementById('saveModalBtn').addEventListener('click',()=>{
+      if(!editingStationId) return;
+      const s = stations.find(x=>x.id===editingStationId);
+      const selectedQueue = document.querySelector('#queueOptions .queue-opt.selected')?.dataset.queue || null;
+      s.queue = selectedQueue;
+      s.queueUpdatedAt = Date.now();
+      document.querySelectorAll('#fuelCheckboxes input').forEach(cb=>{ s.fuels[cb.dataset.fuel] = cb.checked; });
+      saveStations(); closeModal(); renderStations();
+    });
+    document.getElementById('closeModalBtn').addEventListener('click',closeModal);
+    document.getElementById('editModal').addEventListener('click',e=>{ if(e.target===document.getElementById('editModal')) closeModal(); });
+
+    async function geo() {
+      if(!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        currentLat=pos.coords.latitude; currentLon=pos.coords.longitude;
+        try {
+          const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLon}&accept-language=ru`);
+          const d=await r.json();
+          currentCity = d?.address?.city || d?.address?.town || 'Москва';
+        } catch(e){}
+        document.getElementById('cityName').textContent = currentCity;
+        renderStations();
+      }, ()=>{ document.getElementById('cityName').textContent='Москва'; renderStations(); });
+    }
+    document.getElementById('refreshGeoBtn').addEventListener('click',geo);
+    loadStations(); geo(); renderStations();
+    setInterval(renderStations, 30000);
+  })();
+</script>
+</body>
+</html>
