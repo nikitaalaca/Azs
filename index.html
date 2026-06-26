@@ -909,7 +909,7 @@
       // Поиск через Яндекс.Карты API (используем публичный поиск)
       const bbox = `${lon-0.1},${lat-0.1}~${lon+0.1},${lat+0.1}`;
       const response = await fetch(
-        `https://search-maps.yandex.ru/v1/?text=АЗС&type=biz&lang=ru_RU&bbox=${bbox}&results=50&apikey=ваш_api_ключ_яндекс`
+        `https://search-maps.yandex.ru/v1/?text=АЗС&type=biz&lang=ru_RU&bbox=${bbox}&results=50&apikey=047d47e1-7e90-4b8d-861a-8003ecd2db78`
       );
       
       if (!response.ok) {
