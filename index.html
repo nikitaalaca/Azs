@@ -228,10 +228,31 @@
       font-size: 13px;
       font-weight: 600;
       color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     body.light .stations-count {
       color: #1d1d1f;
+    }
+
+    .loading-indicator {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,149,0,0.3);
+      border-top-color: #ff9500;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loading-indicator.active {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .filter-chip {
@@ -271,8 +292,20 @@
       border-radius: 20px;
       padding: 16px;
       border: 1px solid rgba(255,255,255,0.08);
-      transition: all 0.2s;
+      transition: all 0.3s;
       backdrop-filter: blur(10px);
+      animation: fadeInUp 0.3s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     body.light .station-card {
@@ -283,6 +316,11 @@
 
     .station-card:active {
       transform: scale(0.98);
+    }
+
+    .station-card.expired {
+      opacity: 0.6;
+      border-color: rgba(255,59,48,0.3);
     }
 
     .station-top {
@@ -379,6 +417,15 @@
     .queue-time {
       font-size: 11px;
       color: #636366;
+    }
+
+    .expired-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255,59,48,0.2);
+      color: #ff3b30;
+      font-weight: 600;
     }
 
     .fuel-row {
@@ -681,7 +728,10 @@
     </div>
 
     <div class="info-bar">
-      <span class="stations-count" id="stationsCount">Загрузка...</span>
+      <span class="stations-count">
+        <span id="stationsCount">Загрузка...</span>
+        <div class="loading-indicator" id="loadingIndicator"></div>
+      </span>
       <button class="filter-chip" id="filterBtn">
         <i class="fas fa-filter"></i> С очередями
       </button>
@@ -734,14 +784,16 @@
   const database = getDatabase(app);
   
   const FUEL_TYPES = ['АИ-92', 'АИ-95', 'АИ-98', 'ДТ', 'Газ'];
+  const EXPIRATION_TIME = 3 * 60 * 60 * 1000; // 3 часа в миллисекундах
+  
   let currentLat = null;
   let currentLon = null;
-  let currentCity = '';
   let editingStationId = null;
   let allStations = [];
   let searchQuery = '';
   let showOnlyWithQueue = false;
   let isSearching = false;
+  let isLoadingStations = false;
 
   // Определение темы
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
@@ -757,6 +809,37 @@
     setTimeout(() => toast.classList.remove('show'), 2000);
   }
 
+  function setLoadingState(loading) {
+    isLoadingStations = loading;
+    const indicator = document.getElementById('loadingIndicator');
+    if (loading) {
+      indicator.classList.add('active');
+    } else {
+      indicator.classList.remove('active');
+    }
+  }
+
+  // Проверка и сброс устаревших данных
+  function checkAndResetExpiredData(station) {
+    if (station.queueUpdatedAt) {
+      const age = Date.now() - station.queueUpdatedAt;
+      if (age > EXPIRATION_TIME) {
+        // Данные устарели, сбрасываем
+        const updates = {};
+        updates[`stations/${station.id}/queue`] = null;
+        updates[`stations/${station.id}/queueUpdatedAt`] = null;
+        update(ref(database), updates);
+        
+        return {
+          ...station,
+          queue: null,
+          queueUpdatedAt: null
+        };
+      }
+    }
+    return station;
+  }
+
   function calcDistance(lat1, lon1, lat2, lon2) {
     if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
     const R = 6371;
@@ -768,10 +851,16 @@
 
   function getFreshnessWeight(updatedAt) {
     if (!updatedAt) return 0;
-    return Math.max(0, Math.pow(2, -(Date.now() - updatedAt) / 60000 / 30));
+    const age = Date.now() - updatedAt;
+    if (age > EXPIRATION_TIME) return 0;
+    return Math.max(0, Math.pow(2, -age / 60000 / 30));
   }
 
-  // Геокодирование адреса в координаты
+  function isExpired(updatedAt) {
+    if (!updatedAt) return false;
+    return (Date.now() - updatedAt) > EXPIRATION_TIME;
+  }
+
   async function geocodeAddress(address) {
     try {
       const response = await fetch(
@@ -792,7 +881,6 @@
     }
   }
 
-  // Получение адреса по координатам
   async function reverseGeocode(lat, lon) {
     try {
       const response = await fetch(
@@ -808,7 +896,6 @@
     }
   }
 
-  // Получение города
   async function getCityFromCoords(lat, lon) {
     try {
       const response = await fetch(
@@ -821,7 +908,6 @@
     }
   }
 
-  // Поиск АЗС в заданной области
   async function searchStationsInArea(lat, lon, radius = 10) {
     try {
       const query = `
@@ -849,8 +935,11 @@
     }
   }
 
-  // Сохранение станций в Firebase
-  async function saveStationsToFirebase(elements) {
+  // Потоковое сохранение станций
+  async function saveStationsStream(elements) {
+    setLoadingState(true);
+    let savedCount = 0;
+    
     for (const element of elements) {
       const stationLat = element.lat || element.center?.lat;
       const stationLon = element.lon || element.center?.lon;
@@ -864,6 +953,14 @@
       const stationRef = ref(database, `stations/${firebaseId}`);
       const snapshot = await get(stationRef);
       const existingData = snapshot.val();
+      
+      // Проверяем устаревшие данные
+      if (existingData) {
+        const processed = checkAndResetExpiredData({ id: firebaseId, ...existingData });
+        if (processed.queue === null) {
+          // Данные были сброшены
+        }
+      }
       
       const updates = {};
       updates[`stations/${firebaseId}/name`] = name;
@@ -884,10 +981,16 @@
       }
       
       await update(ref(database), updates);
+      savedCount++;
+      
+      // Обновляем счетчик в реальном времени
+      document.getElementById('stationsCount').textContent = `Загружено ${savedCount}/${elements.length}`;
     }
+    
+    setLoadingState(false);
+    showToast(`Загружено ${savedCount} АЗС`);
   }
 
-  // Загрузка станций из Firebase
   function listenToStations() {
     const stationsRef = ref(database, 'stations');
     
@@ -897,10 +1000,10 @@
       
       if (data) {
         Object.keys(data).forEach(key => {
-          stations.push({
-            id: key,
-            ...data[key]
-          });
+          const station = { id: key, ...data[key] };
+          // Проверяем и сбрасываем устаревшие данные
+          const processed = checkAndResetExpiredData(station);
+          stations.push(processed);
         });
       }
       
@@ -909,7 +1012,6 @@
     });
   }
 
-  // Основная функция поиска
   async function performSearch() {
     const query = searchQuery.trim();
     const locationBtn = document.getElementById('locationBtn');
@@ -920,7 +1022,9 @@
     }
 
     isSearching = true;
+    setLoadingState(true);
     locationBtn.classList.add('loading');
+    
     document.getElementById('stationsContainer').innerHTML = `
       <div class="empty-state">
         <i class="fas fa-search fa-spin"></i>
@@ -935,7 +1039,6 @@
       let searchRadius = 10;
 
       if (query) {
-        // Геокодируем запрос
         const geocodeResult = await geocodeAddress(query);
         if (geocodeResult) {
           searchLat = geocodeResult.lat;
@@ -944,25 +1047,24 @@
           searchRadius = 5;
         } else if (!currentLat) {
           showToast('Местоположение не найдено. Уточните запрос.');
+          setLoadingState(false);
+          locationBtn.classList.remove('loading');
+          isSearching = false;
           return;
         }
       }
 
-      // Ищем АЗС
       const elements = await searchStationsInArea(searchLat, searchLon, searchRadius);
       
       if (elements.length === 0) {
-        // Расширяем радиус поиска
         const extendedElements = await searchStationsInArea(searchLat, searchLon, 20);
         if (extendedElements.length > 0) {
-          await saveStationsToFirebase(extendedElements);
-          showToast(`Найдено ${extendedElements.length} АЗС в радиусе 20 км`);
+          await saveStationsStream(extendedElements);
         } else {
           showToast('АЗС не найдены. Попробуйте другой запрос.');
         }
       } else {
-        await saveStationsToFirebase(elements);
-        showToast(`Найдено ${elements.length} АЗС`);
+        await saveStationsStream(elements);
       }
 
       if (!query && searchLat === currentLat) {
@@ -975,11 +1077,11 @@
       showToast('Ошибка поиска. Проверьте подключение.');
     } finally {
       isSearching = false;
+      setLoadingState(false);
       locationBtn.classList.remove('loading');
     }
   }
 
-  // Запрос геолокации
   function requestGeolocation() {
     const locationBtn = document.getElementById('locationBtn');
     locationBtn.classList.add('loading');
@@ -1007,7 +1109,6 @@
         document.getElementById('locationLabel').textContent = 'Включите геолокацию';
         locationBtn.classList.remove('loading');
         
-        // Предлагаем ввести город вручную
         document.getElementById('searchInput').placeholder = 'Введите город для поиска АЗС...';
         showToast('Введите город или адрес для поиска');
       },
@@ -1022,7 +1123,6 @@
   function renderFilteredStations() {
     let filtered = [...allStations].filter(s => s.lat && s.lon);
     
-    // Текстовый поиск по названию и адресу
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(s => 
@@ -1031,12 +1131,10 @@
       );
     }
     
-    // Фильтр по наличию очереди
     if (showOnlyWithQueue) {
-      filtered = filtered.filter(s => s.queue && s.queueUpdatedAt);
+      filtered = filtered.filter(s => s.queue && s.queueUpdatedAt && !isExpired(s.queueUpdatedAt));
     }
     
-    // Сортировка по расстоянию
     if (currentLat && currentLon) {
       filtered.sort((a, b) => {
         return calcDistance(currentLat, currentLon, a.lat, a.lon) - 
@@ -1069,13 +1167,14 @@
         ? calcDistance(currentLat, currentLon, station.lat, station.lon).toFixed(1)
         : null;
       
+      const expired = isExpired(station.queueUpdatedAt);
       const weight = getFreshnessWeight(station.queueUpdatedAt);
-      const queueText = station.queue 
+      const queueText = (station.queue && !expired)
         ? { low: 'Маленькая', medium: 'Средняя', high: 'Большая' }[station.queue] 
         : 'Нет данных';
-      const queueClass = station.queue ? `queue-${station.queue}` : 'queue-none';
+      const queueClass = (station.queue && !expired) ? `queue-${station.queue}` : 'queue-none';
       
-      const timeAgo = station.queueUpdatedAt 
+      const timeAgo = station.queueUpdatedAt && !expired
         ? Math.floor((Date.now() - station.queueUpdatedAt) / 60000) 
         : null;
       
@@ -1088,7 +1187,7 @@
       }).join('');
 
       return `
-        <div class="station-card">
+        <div class="station-card ${expired ? 'expired' : ''}">
           <div class="station-top">
             <div class="station-info">
               <div class="station-name">
@@ -1105,8 +1204,9 @@
             <span class="queue-badge ${queueClass}">
               <i class="fas fa-users"></i> ${queueText}
             </span>
-            ${timeAgo ? `<span class="queue-time">${timeAgo} мин назад</span>` : ''}
-            ${weight > 0 && weight < 0.6 ? '<span class="queue-time">Уточняется</span>' : ''}
+            ${expired ? '<span class="expired-badge">Устарело 3ч+</span>' : ''}
+            ${timeAgo && !expired ? `<span class="queue-time">${timeAgo} мин назад</span>` : ''}
+            ${!expired && weight > 0 && weight < 0.6 ? '<span class="queue-time">Уточняется</span>' : ''}
           </div>
           <div class="fuel-row">${fuelsHtml}</div>
           <button class="update-btn" data-station-id="${station.id}">
@@ -1132,7 +1232,7 @@
     document.getElementById('modalStationTitle').textContent = station.name || 'АЗС';
     
     document.querySelectorAll('#queueOptions .queue-opt').forEach(opt => {
-      opt.classList.toggle('selected', opt.dataset.queue === station.queue);
+      opt.classList.toggle('selected', opt.dataset.queue === station.queue && !isExpired(station.queueUpdatedAt));
     });
     
     const fuelContainer = document.getElementById('fuelCheckboxes');
@@ -1165,6 +1265,22 @@
       console.error('Ошибка сохранения:', error);
       showToast('Ошибка сохранения');
     }
+  }
+
+  // Периодическая проверка устаревших данных
+  function startExpirationChecker() {
+    setInterval(() => {
+      let hasExpired = false;
+      allStations.forEach(station => {
+        if (station.queueUpdatedAt && isExpired(station.queueUpdatedAt)) {
+          hasExpired = true;
+          checkAndResetExpiredData(station);
+        }
+      });
+      if (hasExpired) {
+        renderFilteredStations();
+      }
+    }, 60000); // Проверка каждую минуту
   }
 
   // Обработчики событий
@@ -1223,8 +1339,8 @@
 
   // Запуск
   listenToStations();
+  startExpirationChecker();
   
-  // Автоматически запрашиваем геолокацию при загрузке
   setTimeout(() => {
     if (!currentLat) {
       requestGeolocation();
