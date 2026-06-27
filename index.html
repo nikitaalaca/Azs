@@ -6,8 +6,8 @@
   <title>АЗС • Очереди и топливо</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -21,30 +21,45 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 0;
-      margin: 0;
+      background: #000;
       transition: background 0.3s ease;
-      background: var(--tg-theme-bg-color, #f2f2f7);
     }
 
-    body.dark {
-      background: var(--tg-theme-bg-color, #000000);
+    body.light {
+      background: #f5f5f7;
     }
 
     .app {
       width: 100%;
+      max-width: 430px;
       height: 100vh;
       height: 100dvh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
+      background: #0a0a0a;
       transition: all 0.3s ease;
-      background: var(--tg-theme-bg-color, #ffffff);
     }
 
-    body.dark .app {
-      background: var(--tg-theme-bg-color, #0d0d0f);
+    body.light .app {
+      background: #ffffff;
+      box-shadow: 0 0 40px rgba(0,0,0,0.1);
+    }
+
+    .bg-gradient {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 300px;
+      background: linear-gradient(180deg, rgba(255,149,0,0.15) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body.light .bg-gradient {
+      background: linear-gradient(180deg, rgba(255,149,0,0.08) 0%, transparent 100%);
     }
 
     .content {
@@ -56,219 +71,225 @@
     }
 
     .header {
-      padding: 16px 16px 12px;
+      padding: 20px 20px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      background: var(--tg-theme-secondary-bg-color, transparent);
     }
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
     }
 
-    .header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+    .logo {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #ff9500, #ff6b00);
+      border-radius: 14px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      color: var(--tg-theme-text-color, #1d1d1f);
+      justify-content: center;
+      font-size: 20px;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(255,149,0,0.3);
     }
 
-    body.dark .header h1 {
-      color: var(--tg-theme-text-color, #ffffff);
-    }
-
-    .header h1 i {
-      color: #ff9500;
+    .header-title h1 {
       font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+      line-height: 1.1;
     }
 
-    .stations-count {
+    body.light .header-title h1 {
+      color: #1d1d1f;
+    }
+
+    .header-title span {
       font-size: 12px;
+      color: #8e8e93;
       font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 12px;
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-      color: var(--tg-theme-hint-color, #8e8e93);
     }
 
-    body.dark .stations-count {
+    body.light .header-title span {
+      color: #8e8e93;
+    }
+
+    .location-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: none;
       background: rgba(255,255,255,0.1);
-    }
-
-    .location-badge {
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
+      color: #ff9500;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: 0.2s;
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-      color: var(--tg-theme-text-color, #1d1d1f);
+      justify-content: center;
     }
 
-    body.dark .location-badge {
-      background: rgba(255,255,255,0.1);
-      color: var(--tg-theme-text-color, #e5e5e7);
-    }
-
-    .location-badge i {
+    body.light .location-btn {
+      background: #f2f2f7;
       color: #ff9500;
     }
 
-    .search-bar {
-      margin: 0 16px 12px;
+    .location-btn:active {
+      transform: scale(0.95);
+      background: rgba(255,149,0,0.2);
+    }
+
+    .location-btn.loading {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .search-section {
+      padding: 0 20px 16px;
+    }
+
+    .search-container {
       display: flex;
       gap: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 4px;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    body.light .search-container {
+      background: #f2f2f7;
+      border: 1px solid #e5e5ea;
+    }
+
+    .search-icon {
+      display: flex;
+      align-items: center;
+      padding-left: 16px;
+      color: #8e8e93;
     }
 
     .search-input {
       flex: 1;
-      padding: 10px 16px;
-      border-radius: 20px;
-      border: 1px solid var(--tg-theme-hint-color, #e5e5ea);
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-      color: var(--tg-theme-text-color, #1d1d1f);
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      outline: none;
-      transition: 0.2s;
-    }
-
-    body.dark .search-input {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #ffffff;
-    }
-
-    .search-input:focus {
-      border-color: #ff9500;
-    }
-
-    .filter-btn {
-      padding: 10px 14px;
-      border-radius: 20px;
-      border: 1px solid var(--tg-theme-hint-color, #e5e5ea);
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-      color: var(--tg-theme-text-color, #1d1d1f);
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
-    }
-
-    body.dark .filter-btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #ffffff;
-    }
-
-    .filter-btn.active {
-      background: #ff9500;
-      border-color: #ff9500;
-      color: #ffffff;
-    }
-
-    .status-bar {
-      margin: 0 16px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      flex-wrap: wrap;
-      gap: 8px;
-      color: var(--tg-theme-hint-color, #8e8e93);
-    }
-
-    body.dark .status-bar {
-      color: var(--tg-theme-hint-color, #98989e);
-    }
-
-    .connection-indicator {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 500;
-    }
-
-    .connection-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #30d158;
-    }
-
-    .connection-dot.offline {
-      background: #ff453a;
-    }
-
-    .refresh-btn {
+      padding: 14px 12px 14px 4px;
+      background: transparent;
       border: none;
+      color: #fff;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
       font-weight: 500;
-      font-size: 12px;
+      outline: none;
+    }
+
+    body.light .search-input {
+      color: #1d1d1f;
+    }
+
+    .search-input::placeholder {
+      color: #636366;
+    }
+
+    .search-btn {
+      padding: 12px 20px;
+      background: #ff9500;
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .search-btn:active {
+      background: #e68600;
+      transform: scale(0.97);
+    }
+
+    .info-bar {
+      padding: 0 20px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stations-count {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    body.light .stations-count {
+      color: #1d1d1f;
+    }
+
+    .filter-chip {
       padding: 6px 14px;
       border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
       cursor: pointer;
-      transition: 0.2s;
+      transition: all 0.2s;
       font-family: 'Inter', sans-serif;
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-      color: var(--tg-theme-text-color, #1d1d1f);
-    }
-
-    body.dark .refresh-btn {
       background: rgba(255,255,255,0.08);
-      color: var(--tg-theme-text-color, #ffffff);
+      color: #8e8e93;
     }
 
-    .refresh-btn:active {
-      opacity: 0.7;
+    body.light .filter-chip {
+      background: #f2f2f7;
+      color: #8e8e93;
+    }
+
+    .filter-chip.active {
+      background: #ff9500;
+      color: #fff;
     }
 
     .stations-list {
       flex: 1;
       overflow-y: auto;
-      padding: 0 12px 10px;
+      padding: 0 16px 12px;
       display: flex;
       flex-direction: column;
       gap: 8px;
-      -webkit-overflow-scrolling: touch;
     }
 
     .station-card {
-      border-radius: 16px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      transition: 0.2s;
-      background: var(--tg-theme-bg-color, #ffffff);
-      border: 1px solid var(--tg-theme-hint-color, #e5e5ea);
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
     }
 
-    body.dark .station-card {
-      background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-      border: 1px solid rgba(255,255,255,0.1);
+    body.light .station-card {
+      background: #fff;
+      border: 1px solid #e5e5ea;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    .station-header {
+    .station-card:active {
+      transform: scale(0.98);
+    }
+
+    .station-top {
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
-      gap: 8px;
+      align-items: flex-start;
+      margin-bottom: 12px;
     }
 
     .station-info {
@@ -276,177 +297,177 @@
     }
 
     .station-name {
-      font-weight: 600;
-      font-size: 15px;
-      line-height: 1.3;
-      color: var(--tg-theme-text-color, #1d1d1f);
-    }
-
-    body.dark .station-name {
-      color: var(--tg-theme-text-color, #ffffff);
-    }
-
-    .station-address {
-      font-size: 11px;
-      margin-top: 2px;
-      line-height: 1.4;
-      color: var(--tg-theme-hint-color, #8e8e93);
-    }
-
-    body.dark .station-address {
-      color: var(--tg-theme-hint-color, #8e8e93);
-    }
-
-    .distance {
-      font-size: 11px;
-      font-weight: 500;
-      padding: 3px 8px;
-      border-radius: 12px;
-      white-space: nowrap;
-      color: var(--tg-theme-hint-color, #6e6e73);
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    }
-
-    body.dark .distance {
-      color: #aeaeb2;
-      background: rgba(255,255,255,0.06);
-    }
-
-    .queue-row {
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    body.light .station-name {
+      color: #1d1d1f;
+    }
+
+    .brand-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255,149,0,0.2);
+      color: #ff9500;
+      font-weight: 600;
+    }
+
+    .station-address {
+      font-size: 12px;
+      color: #8e8e93;
+      line-height: 1.3;
+    }
+
+    .distance-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ff9500;
+      background: rgba(255,149,0,0.15);
+      padding: 6px 12px;
+      border-radius: 10px;
+    }
+
+    body.light .distance-badge {
+      background: rgba(255,149,0,0.1);
+    }
+
+    .queue-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
       flex-wrap: wrap;
     }
 
-    .queue-indicator {
+    .queue-badge {
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 5px;
-      padding: 5px 10px;
-      border-radius: 16px;
-      font-weight: 600;
-      font-size: 12px;
+      gap: 6px;
     }
 
     .queue-low {
-      background: rgba(48,209,88,0.12);
-      color: #248a3d;
-    }
-
-    body.dark .queue-low {
-      background: rgba(48,209,88,0.15);
-      color: #30d158;
+      background: rgba(52,199,89,0.15);
+      color: #34c759;
     }
 
     .queue-medium {
-      background: rgba(255,159,10,0.12);
-      color: #cc7a00;
-    }
-
-    body.dark .queue-medium {
-      background: rgba(255,159,10,0.15);
-      color: #ff9f0a;
+      background: rgba(255,149,0,0.15);
+      color: #ff9500;
     }
 
     .queue-high {
-      background: rgba(255,69,58,0.12);
-      color: #d63025;
-    }
-
-    body.dark .queue-high {
-      background: rgba(255,69,58,0.15);
-      color: #ff453a;
+      background: rgba(255,59,48,0.15);
+      color: #ff3b30;
     }
 
     .queue-none {
       background: rgba(142,142,147,0.1);
-      color: var(--tg-theme-hint-color, #8e8e93);
+      color: #8e8e93;
     }
 
-    .time-ago {
-      font-size: 10px;
-      color: var(--tg-theme-hint-color, #8e8e93);
-    }
-
-    body.dark .time-ago {
+    .queue-time {
+      font-size: 11px;
       color: #636366;
     }
 
-    .fuel-tags {
+    .fuel-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
-    .fuel-tag {
-      border-radius: 14px;
-      padding: 4px 10px;
+    .fuel-chip {
+      padding: 5px 10px;
+      border-radius: 8px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
       display: flex;
       align-items: center;
       gap: 4px;
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-      color: var(--tg-theme-text-color, #3a3a3c);
     }
 
-    body.dark .fuel-tag {
-      background: rgba(255,255,255,0.06);
-      color: #d1d1d6;
+    body.light .fuel-chip {
+      background: #f2f2f7;
+      color: #1d1d1f;
     }
 
-    .fuel-tag.available i {
-      color: #30d158;
-      font-size: 9px;
-    }
-
-    .fuel-tag.missing {
+    .fuel-chip.missing {
       opacity: 0.4;
       text-decoration: line-through;
     }
 
-    .fuel-tag.missing i {
-      color: #ff453a;
+    .fuel-chip i {
       font-size: 9px;
     }
 
+    .fuel-chip.available i {
+      color: #34c759;
+    }
+
+    .fuel-chip.missing i {
+      color: #ff3b30;
+    }
+
     .update-btn {
-      background: var(--tg-theme-button-color, #ff9500);
+      width: 100%;
+      padding: 12px;
       border: none;
-      color: var(--tg-theme-button-text-color, #ffffff);
-      font-weight: 600;
-      font-size: 13px;
-      padding: 8px 16px;
-      border-radius: 24px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ff9500, #ff6b00);
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      transition: 0.2s;
-      margin-top: 2px;
+      transition: all 0.2s;
       font-family: 'Inter', sans-serif;
+      box-shadow: 0 4px 12px rgba(255,149,0,0.3);
     }
 
     .update-btn:active {
-      opacity: 0.8;
+      transform: scale(0.97);
+      box-shadow: 0 2px 6px rgba(255,149,0,0.2);
     }
 
-    .footer {
-      padding: 10px 16px;
-      font-size: 10px;
+    .empty-state {
       text-align: center;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--tg-theme-hint-color, #aeaeb2);
-      border-top: 1px solid var(--tg-theme-hint-color, #e5e5ea);
+      padding: 40px 20px;
     }
 
-    body.dark .footer {
-      color: #636366;
-      border-top: 1px solid rgba(255,255,255,0.1);
+    .empty-state i {
+      font-size: 48px;
+      color: #ff9500;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    body.light .empty-state h3 {
+      color: #1d1d1f;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: #8e8e93;
     }
 
     .modal-overlay {
@@ -455,7 +476,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.6);
       backdrop-filter: blur(10px);
       display: flex;
       align-items: flex-end;
@@ -463,11 +484,7 @@
       z-index: 1000;
       visibility: hidden;
       opacity: 0;
-      transition: 0.25s;
-    }
-
-    body.dark .modal-overlay {
-      background: rgba(0,0,0,0.7);
+      transition: 0.3s;
     }
 
     .modal-overlay.active {
@@ -477,200 +494,205 @@
 
     .modal-sheet {
       width: 100%;
-      max-width: 500px;
-      border-radius: 20px 20px 0 0;
-      padding: 20px 16px 24px;
+      max-width: 430px;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px 30px;
       transform: translateY(100%);
       transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-      background: var(--tg-theme-bg-color, #ffffff);
+      background: #1c1c1e;
     }
 
-    body.dark .modal-sheet {
-      background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    body.light .modal-sheet {
+      background: #ffffff;
     }
 
-    .active .modal-sheet {
+    .modal-overlay.active .modal-sheet {
       transform: translateY(0);
     }
 
     .modal-handle {
-      width: 32px;
+      width: 36px;
       height: 4px;
       border-radius: 2px;
-      margin: 0 auto 16px;
-      background: var(--tg-theme-hint-color, #d1d1d6);
-    }
-
-    body.dark .modal-handle {
+      margin: 0 auto 20px;
       background: #48484a;
     }
 
-    .modal-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: var(--tg-theme-text-color, #1d1d1f);
+    body.light .modal-handle {
+      background: #d1d1d6;
     }
 
-    body.dark .modal-title {
-      color: var(--tg-theme-text-color, #ffffff);
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    body.light .modal-title {
+      color: #1d1d1f;
     }
 
     .modal-label {
-      margin-bottom: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--tg-theme-hint-color, #6e6e73);
-    }
-
-    body.dark .modal-label {
-      color: #aeaeb2;
+      font-size: 14px;
+      font-weight: 600;
+      color: #8e8e93;
+      margin-bottom: 10px;
     }
 
     .queue-options {
       display: flex;
-      gap: 6px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 20px;
     }
 
     .queue-opt {
       flex: 1;
-      text-align: center;
-      padding: 10px 6px;
-      border-radius: 12px;
-      font-weight: 600;
+      padding: 12px;
+      border-radius: 14px;
+      font-weight: 700;
       font-size: 13px;
       cursor: pointer;
       border: 2px solid transparent;
-      transition: 0.2s;
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-      color: var(--tg-theme-text-color, #3a3a3c);
+      transition: all 0.2s;
+      text-align: center;
+      background: rgba(255,255,255,0.08);
+      color: #8e8e93;
     }
 
-    body.dark .queue-opt {
-      background: #2c2c2e;
-      color: #ccc;
+    body.light .queue-opt {
+      background: #f2f2f7;
+      color: #8e8e93;
     }
 
     .queue-opt.selected {
-      background: var(--tg-theme-button-color, #ff9500);
-      color: var(--tg-theme-button-text-color, #ffffff);
-      border-color: var(--tg-theme-button-color, #ff9500);
+      background: #ff9500;
+      color: #fff;
+      border-color: #ff9500;
     }
 
     .fuel-checkboxes {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin: 12px 0 16px;
+      gap: 8px;
+      margin: 12px 0 20px;
     }
 
     .fuel-check {
-      padding: 8px 12px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-weight: 500;
       font-size: 13px;
       cursor: pointer;
-      background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-      color: var(--tg-theme-text-color, #1d1d1f);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    body.dark .fuel-check {
-      background: #2c2c2e;
-      color: #ffffff;
+    body.light .fuel-check {
+      background: #f2f2f7;
+      color: #1d1d1f;
     }
 
-    .fuel-check input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: var(--tg-theme-button-color, #ff9500);
+    .fuel-check input {
+      accent-color: #ff9500;
+      width: 18px;
+      height: 18px;
     }
 
-    .save-btn {
-      background: var(--tg-theme-button-color, #ff9500);
-      color: var(--tg-theme-button-text-color, #ffffff);
+    .btn-save {
+      width: 100%;
+      padding: 16px;
       border: none;
+      border-radius: 16px;
+      background: #ff9500;
+      color: #fff;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-cancel {
       width: 100%;
       padding: 12px;
-      border-radius: 24px;
-      font-weight: 700;
+      border: none;
+      border-radius: 16px;
+      background: transparent;
+      color: #ff9500;
+      font-weight: 600;
       font-size: 15px;
       cursor: pointer;
+      margin-top: 8px;
       font-family: 'Inter', sans-serif;
-      transition: 0.2s;
     }
 
-    .save-btn:active {
-      opacity: 0.8;
-    }
-
-    .cancel-btn {
-      background: transparent;
-      border: none;
-      color: var(--tg-theme-button-color, #ff9500);
-      width: 100%;
-      margin-top: 10px;
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff9500;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
       font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
     }
 
-    .loading-state {
-      text-align: center;
-      padding: 40px 20px;
-      opacity: 0.6;
-      color: var(--tg-theme-hint-color, #8e8e93);
-    }
-
-    @supports (padding: env(safe-area-inset-bottom)) {
-      .footer {
-        padding-bottom: calc(10px + env(safe-area-inset-bottom));
-      }
+    .toast.show {
+      opacity: 1;
     }
   </style>
 </head>
-<body>
+<body class="dark">
 <div class="app">
+  <div class="bg-gradient"></div>
   <div class="content">
     <div class="header">
       <div class="header-left">
-        <h1><i class="fas fa-gas-pump"></i> АЗС</h1>
-        <span class="stations-count" id="stationsCount">0 АЗС</span>
+        <div class="logo">
+          <i class="fas fa-gas-pump"></i>
+        </div>
+        <div class="header-title">
+          <h1>АЗС Рядом</h1>
+          <span id="locationLabel">Определение...</span>
+        </div>
       </div>
-      <div class="location-badge" id="locationDisplay">
-        <i class="fas fa-location-dot"></i> 
-        <span id="cityName">Определение...</span>
-      </div>
-    </div>
-    
-    <div class="search-bar">
-      <input type="text" class="search-input" id="searchInput" placeholder="Поиск АЗС по названию или адресу...">
-      <button class="filter-btn" id="filterBtn" title="Фильтр по наличию очереди">
-        <i class="fas fa-filter"></i>
+      <button class="location-btn" id="locationBtn" title="Обновить геолокацию">
+        <i class="fas fa-location-crosshairs"></i>
       </button>
     </div>
-    
-    <div class="status-bar">
-      <div class="connection-indicator" id="connectionStatus">
-        <span class="connection-dot" id="connectionDot"></span>
-        <span id="connectionText">Подключение...</span>
+
+    <div class="search-section">
+      <div class="search-container">
+        <div class="search-icon">
+          <i class="fas fa-search"></i>
+        </div>
+        <input type="text" class="search-input" id="searchInput" placeholder="Город, улица или название АЗС...">
+        <button class="search-btn" id="searchBtn">Найти</button>
       </div>
-      <button class="refresh-btn" id="refreshGeoBtn">
-        <i class="fas fa-sync-alt"></i> Обновить
+    </div>
+
+    <div class="info-bar">
+      <span class="stations-count" id="stationsCount">Загрузка...</span>
+      <button class="filter-chip" id="filterBtn">
+        <i class="fas fa-filter"></i> С очередями
       </button>
     </div>
+
     <div class="stations-list" id="stationsContainer">
-      <div class="loading-state">
-        <i class="fas fa-spinner fa-pulse" style="font-size: 24px; margin-bottom: 12px; display: block;"></i>
-        Загрузка всех АЗС через Яндекс.Карты...
+      <div class="empty-state">
+        <i class="fas fa-gas-pump"></i>
+        <h3>Ищем АЗС...</h3>
+        <p>Определяем ваше местоположение</p>
       </div>
-    </div>
-    <div class="footer">
-      <span>Данные актуальны 30 минут</span>
-      <span>Общая база данных</span>
     </div>
   </div>
 </div>
@@ -679,20 +701,21 @@
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" id="modalStationTitle">АЗС</div>
-    <div class="modal-label">Размер очереди:</div>
+    <div class="modal-label">Очередь:</div>
     <div class="queue-options" id="queueOptions">
-      <div class="queue-opt" data-queue="low">Малая</div>
+      <div class="queue-opt" data-queue="low">Маленькая</div>
       <div class="queue-opt" data-queue="medium">Средняя</div>
       <div class="queue-opt" data-queue="high">Большая</div>
     </div>
-    <div class="modal-label">Наличие топлива:</div>
+    <div class="modal-label">Топливо в наличии:</div>
     <div class="fuel-checkboxes" id="fuelCheckboxes"></div>
-    <button class="save-btn" id="saveModalBtn">Сохранить</button>
-    <button class="cancel-btn" id="closeModalBtn">Отмена</button>
+    <button class="btn-save" id="saveModalBtn">Сохранить для всех</button>
+    <button class="btn-cancel" id="closeModalBtn">Отмена</button>
   </div>
 </div>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<div class="toast" id="toast"></div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -713,59 +736,25 @@
   const FUEL_TYPES = ['АИ-92', 'АИ-95', 'АИ-98', 'ДТ', 'Газ'];
   let currentLat = null;
   let currentLon = null;
+  let currentCity = '';
   let editingStationId = null;
   let allStations = [];
   let searchQuery = '';
   let showOnlyWithQueue = false;
+  let isSearching = false;
 
-  // Инициализация Telegram Mini App
-  let tg = window.Telegram?.WebApp;
-  
-  function initTelegramApp() {
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      applyTelegramTheme();
-      tg.onEvent('themeChanged', applyTelegramTheme);
-      
-      tg.BackButton.show();
-      tg.BackButton.onClick(() => {
-        if (document.getElementById('editModal').classList.contains('active')) {
-          closeModal();
-        }
-      });
-    }
-  }
+  // Определение темы
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+  document.body.className = systemDark.matches ? 'dark' : 'light';
+  systemDark.addEventListener('change', (e) => {
+    document.body.className = e.matches ? 'dark' : 'light';
+  });
 
-  function applyTelegramTheme() {
-    if (!tg) return;
-    
-    const theme = tg.colorScheme;
-    document.body.className = theme;
-    
-    document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || (theme === 'dark' ? '#000000' : '#ffffff'));
-    document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || (theme === 'dark' ? '#ffffff' : '#1d1d1f'));
-    document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || (theme === 'dark' ? '#8e8e93' : '#8e8e93'));
-    document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#ff9500');
-    document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
-    document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tg.themeParams.secondary_bg_color || (theme === 'dark' ? '#1c1c1e' : '#f2f2f7'));
-  }
-
-  function detectSystemTheme() {
-    if (tg) return tg.colorScheme;
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-    return 'light';
-  }
-
-  if (!tg) {
-    const systemTheme = detectSystemTheme();
-    document.body.className = systemTheme;
-    
-    if (window.matchMedia) {
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        document.body.className = e.matches ? 'dark' : 'light';
-      });
-    }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
   }
 
   function calcDistance(lat1, lon1, lat2, lon2) {
@@ -774,38 +763,44 @@
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(dLat/2) ** 2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
   function getFreshnessWeight(updatedAt) {
     if (!updatedAt) return 0;
-    const minutes = (Date.now() - updatedAt) / 60000;
-    return Math.max(0, Math.pow(2, -minutes / 30));
+    return Math.max(0, Math.pow(2, -(Date.now() - updatedAt) / 60000 / 30));
   }
 
-  function updateConnectionStatus(connected) {
-    const dot = document.getElementById('connectionDot');
-    const text = document.getElementById('connectionText');
-    
-    if (connected) {
-      dot.className = 'connection-dot';
-      text.textContent = 'Онлайн';
-    } else {
-      dot.className = 'connection-dot offline';
-      text.textContent = 'Офлайн';
+  // Геокодирование адреса в координаты
+  async function geocodeAddress(address) {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&accept-language=ru`
+      );
+      const data = await response.json();
+      if (data && data.length > 0) {
+        return {
+          lat: parseFloat(data[0].lat),
+          lon: parseFloat(data[0].lon),
+          displayName: data[0].display_name
+        };
+      }
+      return null;
+    } catch (e) {
+      console.error('Ошибка геокодирования:', e);
+      return null;
     }
   }
 
-  async function getAddressFromCoords(lat, lon) {
+  // Получение адреса по координатам
+  async function reverseGeocode(lat, lon) {
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru&zoom=18`
       );
       const data = await response.json();
       if (data && data.display_name) {
-        const parts = data.display_name.split(',');
-        return parts.slice(0, 3).join(',').trim();
+        return data.display_name;
       }
       return null;
     } catch (e) {
@@ -813,81 +808,30 @@
     }
   }
 
+  // Получение города
   async function getCityFromCoords(lat, lon) {
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru&zoom=10`
       );
       const data = await response.json();
-      return data?.address?.city || 
-             data?.address?.town || 
-             data?.address?.village || 
-             data?.address?.county || 
-             'Неизвестно';
+      return data?.address?.city || data?.address?.town || data?.address?.village || 'Рядом';
     } catch (e) {
-      return 'Москва';
+      return 'Рядом';
     }
   }
 
-  function listenToStations() {
-    const stationsRef = ref(database, 'stations');
-    
-    onValue(stationsRef, async (snapshot) => {
-      const data = snapshot.val();
-      const stations = [];
-      
-      if (data) {
-        for (const key of Object.keys(data)) {
-          const station = data[key];
-          if (!station.address && station.lat && station.lon) {
-            const address = await getAddressFromCoords(station.lat, station.lon);
-            if (address) {
-              station.address = address;
-              const updates = {};
-              updates[`stations/${key}/address`] = address;
-              update(ref(database), updates);
-            }
-          }
-          stations.push({
-            id: key,
-            ...station
-          });
-        }
-      }
-      
-      allStations = stations;
-      renderFilteredStations();
-    }, (error) => {
-      console.error('Ошибка чтения из Firebase:', error);
-      updateConnectionStatus(false);
-    });
-  }
-
-  // Получение АЗС через Яндекс.Карты API и OpenStreetMap
-  async function fetchAllNearbyStations(lat, lon) {
-    try {
-      // Используем несколько источников для максимального покрытия
-      await Promise.all([
-        fetchFromOpenStreetMap(lat, lon),
-        fetchFromYandexMaps(lat, lon)
-      ]);
-      
-      updateConnectionStatus(true);
-    } catch (error) {
-      console.error('Ошибка загрузки АЗС:', error);
-    }
-  }
-
-  async function fetchFromOpenStreetMap(lat, lon) {
+  // Поиск АЗС в заданной области
+  async function searchStationsInArea(lat, lon, radius = 10) {
     try {
       const query = `
         [out:json];
         (
-          node["amenity"="fuel"](around:10000, ${lat}, ${lon});
-          way["amenity"="fuel"](around:10000, ${lat}, ${lon});
-          relation["amenity"="fuel"](around:10000, ${lat}, ${lon});
+          node["amenity"="fuel"](around:${radius * 1000}, ${lat}, ${lon});
+          way["amenity"="fuel"](around:${radius * 1000}, ${lat}, ${lon});
+          relation["amenity"="fuel"](around:${radius * 1000}, ${lat}, ${lon});
         );
-        out center 50;
+        out center 100;
       `;
       
       const response = await fetch('https://overpass-api.de/api/interpreter', {
@@ -898,90 +842,25 @@
       if (!response.ok) throw new Error('API error');
       
       const data = await response.json();
-      await processStations(data.elements);
+      return data.elements || [];
     } catch (error) {
-      console.error('Ошибка OpenStreetMap:', error);
+      console.error('Ошибка поиска АЗС:', error);
+      return [];
     }
   }
 
-  async function fetchFromYandexMaps(lat, lon) {
-    try {
-      // Поиск через Яндекс.Карты API (используем публичный поиск)
-      const bbox = `${lon-0.1},${lat-0.1}~${lon+0.1},${lat+0.1}`;
-      const response = await fetch(
-        `https://search-maps.yandex.ru/v1/?text=АЗС&type=biz&lang=ru_RU&bbox=${bbox}&results=50&apikey=047d47e1-7e90-4b8d-861a-8003ecd2db78`
-      );
-      
-      if (!response.ok) {
-        // Если API ключ не настроен, используем альтернативный метод
-        await fetchFromYandexAlternative(lat, lon);
-        return;
-      }
-      
-      const data = await response.json();
-      if (data.features) {
-        const stations = data.features.map(feature => ({
-          type: 'node',
-          id: feature.properties.id,
-          lat: feature.geometry.coordinates[1],
-          lon: feature.geometry.coordinates[0],
-          tags: {
-            name: feature.properties.name,
-            description: feature.properties.description
-          }
-        }));
-        await processStations(stations);
-      }
-    } catch (error) {
-      console.error('Ошибка Яндекс.Карт:', error);
-      await fetchFromYandexAlternative(lat, lon);
-    }
-  }
-
-  async function fetchFromYandexAlternative(lat, lon) {
-    // Используем публичный поиск Яндекса как альтернативу
-    try {
-      const response = await fetch(
-        `https://yandex.ru/maps/api/search?text=АЗС&type=geo&lang=ru&ll=${lon},${lat}&spn=0.1,0.1&results=50`
-      );
-      
-      if (!response.ok) return;
-      
-      const text = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(text, 'text/xml');
-      const features = doc.querySelectorAll('feature');
-      
-      const stations = Array.from(features).map(feature => ({
-        type: 'node',
-        id: feature.querySelector('id')?.textContent || Math.random().toString(),
-        lat: parseFloat(feature.querySelector('pos')?.textContent?.split(' ')[1] || 0),
-        lon: parseFloat(feature.querySelector('pos')?.textContent?.split(' ')[0] || 0),
-        tags: {
-          name: feature.querySelector('name')?.textContent || 'АЗС'
-        }
-      }));
-      
-      await processStations(stations);
-    } catch (error) {
-      console.error('Ошибка альтернативного поиска:', error);
-    }
-  }
-
-  async function processStations(elements) {
+  // Сохранение станций в Firebase
+  async function saveStationsToFirebase(elements) {
     for (const element of elements) {
       const stationLat = element.lat || element.center?.lat;
       const stationLon = element.lon || element.center?.lon;
       
       if (!stationLat || !stationLon) continue;
       
-      const name = element.tags?.name || 
-                  element.tags?.brand || 
-                  element.tags?.operator || 
-                  'АЗС';
-      
+      const name = element.tags?.name || element.tags?.brand || element.tags?.operator || 'АЗС';
       const osmId = element.id?.toString() || `${stationLat},${stationLon}`;
       const firebaseId = osmId.replace(/[\/.]/g, '_');
+      
       const stationRef = ref(database, `stations/${firebaseId}`);
       const snapshot = await get(stationRef);
       const existingData = snapshot.val();
@@ -992,7 +871,7 @@
       updates[`stations/${firebaseId}/lon`] = stationLon;
       
       if (!existingData || !existingData.address) {
-        const address = await getAddressFromCoords(stationLat, stationLon);
+        const address = await reverseGeocode(stationLat, stationLon);
         if (address) {
           updates[`stations/${firebaseId}/address`] = address;
         }
@@ -1008,59 +887,142 @@
     }
   }
 
-  function requestGeolocation() {
-    if (tg && tg.LocationManager) {
-      tg.LocationManager.getLocation((location) => {
-        if (location) {
-          currentLat = location.latitude;
-          currentLon = location.longitude;
-          handleLocationUpdate();
+  // Загрузка станций из Firebase
+  function listenToStations() {
+    const stationsRef = ref(database, 'stations');
+    
+    onValue(stationsRef, (snapshot) => {
+      const data = snapshot.val();
+      const stations = [];
+      
+      if (data) {
+        Object.keys(data).forEach(key => {
+          stations.push({
+            id: key,
+            ...data[key]
+          });
+        });
+      }
+      
+      allStations = stations;
+      renderFilteredStations();
+    });
+  }
+
+  // Основная функция поиска
+  async function performSearch() {
+    const query = searchQuery.trim();
+    const locationBtn = document.getElementById('locationBtn');
+    
+    if (!query && !currentLat) {
+      requestGeolocation();
+      return;
+    }
+
+    isSearching = true;
+    locationBtn.classList.add('loading');
+    document.getElementById('stationsContainer').innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-search fa-spin"></i>
+        <h3>Ищем АЗС...</h3>
+        <p>${query ? `По запросу: "${query}"` : 'В вашем районе'}</p>
+      </div>
+    `;
+
+    try {
+      let searchLat = currentLat;
+      let searchLon = currentLon;
+      let searchRadius = 10;
+
+      if (query) {
+        // Геокодируем запрос
+        const geocodeResult = await geocodeAddress(query);
+        if (geocodeResult) {
+          searchLat = geocodeResult.lat;
+          searchLon = geocodeResult.lon;
+          document.getElementById('locationLabel').textContent = query;
+          searchRadius = 5;
+        } else if (!currentLat) {
+          showToast('Местоположение не найдено. Уточните запрос.');
+          return;
         }
-      });
-      return;
+      }
+
+      // Ищем АЗС
+      const elements = await searchStationsInArea(searchLat, searchLon, searchRadius);
+      
+      if (elements.length === 0) {
+        // Расширяем радиус поиска
+        const extendedElements = await searchStationsInArea(searchLat, searchLon, 20);
+        if (extendedElements.length > 0) {
+          await saveStationsToFirebase(extendedElements);
+          showToast(`Найдено ${extendedElements.length} АЗС в радиусе 20 км`);
+        } else {
+          showToast('АЗС не найдены. Попробуйте другой запрос.');
+        }
+      } else {
+        await saveStationsToFirebase(elements);
+        showToast(`Найдено ${elements.length} АЗС`);
+      }
+
+      if (!query && searchLat === currentLat) {
+        const city = await getCityFromCoords(searchLat, searchLon);
+        document.getElementById('locationLabel').textContent = city;
+      }
+
+    } catch (error) {
+      console.error('Ошибка поиска:', error);
+      showToast('Ошибка поиска. Проверьте подключение.');
+    } finally {
+      isSearching = false;
+      locationBtn.classList.remove('loading');
     }
-    
+  }
+
+  // Запрос геолокации
+  function requestGeolocation() {
+    const locationBtn = document.getElementById('locationBtn');
+    locationBtn.classList.add('loading');
+    document.getElementById('locationLabel').textContent = 'Определение...';
+
     if (!navigator.geolocation) {
-      document.getElementById('cityName').textContent = 'Нет доступа';
-      updateConnectionStatus(false);
+      showToast('Геолокация не поддерживается');
+      locationBtn.classList.remove('loading');
       return;
     }
-    
-    document.getElementById('cityName').textContent = 'Поиск...';
-    
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         currentLat = position.coords.latitude;
         currentLon = position.coords.longitude;
-        await handleLocationUpdate();
+        
+        const city = await getCityFromCoords(currentLat, currentLon);
+        document.getElementById('locationLabel').textContent = city;
+        
+        await performSearch();
+        locationBtn.classList.remove('loading');
       },
       (error) => {
         console.error('Ошибка геолокации:', error);
-        currentLat = 55.7558;
-        currentLon = 37.6173;
-        document.getElementById('cityName').textContent = 'Москва';
-        fetchAllNearbyStations(currentLat, currentLon);
-        updateConnectionStatus(true);
+        document.getElementById('locationLabel').textContent = 'Включите геолокацию';
+        locationBtn.classList.remove('loading');
+        
+        // Предлагаем ввести город вручную
+        document.getElementById('searchInput').placeholder = 'Введите город для поиска АЗС...';
+        showToast('Введите город или адрес для поиска');
       },
       {
         enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 300000
+        timeout: 10000,
+        maximumAge: 0
       }
     );
-  }
-
-  async function handleLocationUpdate() {
-    const city = await getCityFromCoords(currentLat, currentLon);
-    document.getElementById('cityName').textContent = city;
-    await fetchAllNearbyStations(currentLat, currentLon);
-    updateConnectionStatus(true);
   }
 
   function renderFilteredStations() {
     let filtered = [...allStations].filter(s => s.lat && s.lon);
     
-    // Поиск
+    // Текстовый поиск по названию и адресу
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(s => 
@@ -1077,9 +1039,8 @@
     // Сортировка по расстоянию
     if (currentLat && currentLon) {
       filtered.sort((a, b) => {
-        const distA = calcDistance(currentLat, currentLon, a.lat, a.lon);
-        const distB = calcDistance(currentLat, currentLon, b.lat, b.lon);
-        return distA - distB;
+        return calcDistance(currentLat, currentLon, a.lat, a.lon) - 
+               calcDistance(currentLat, currentLon, b.lat, b.lon);
       });
     }
     
@@ -1090,15 +1051,23 @@
   function renderStations(stations) {
     const container = document.getElementById('stationsContainer');
     
-    if (!stations || !stations.length) {
-      container.innerHTML = '<div class="loading-state">Нет АЗС поблизости</div>';
+    if (isSearching) return;
+    
+    if (!stations.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-map-marker-alt"></i>
+          <h3>Ничего не найдено</h3>
+          <p>${searchQuery ? 'Попробуйте изменить запрос' : 'Введите город или адрес для поиска'}</p>
+        </div>
+      `;
       return;
     }
 
     container.innerHTML = stations.map(station => {
-      const distance = (currentLat && currentLon && station.lat && station.lon) 
+      const distance = (currentLat && currentLon) 
         ? calcDistance(currentLat, currentLon, station.lat, station.lon).toFixed(1)
-        : '?';
+        : null;
       
       const weight = getFreshnessWeight(station.queueUpdatedAt);
       const queueText = station.queue 
@@ -1113,31 +1082,35 @@
       const fuels = station.fuels || {};
       const fuelsHtml = FUEL_TYPES.map(type => {
         const available = fuels[type] !== false;
-        return `<span class="fuel-tag ${available ? 'available' : 'missing'}">
-          ${type}
-          <i class="fas ${available ? 'fa-check' : 'fa-times'}"></i>
+        return `<span class="fuel-chip ${available ? 'available' : 'missing'}">
+          ${type} <i class="fas fa-${available ? 'check' : 'times'}"></i>
         </span>`;
       }).join('');
 
       return `
         <div class="station-card">
-          <div class="station-header">
+          <div class="station-top">
             <div class="station-info">
-              <div class="station-name">${station.name || 'АЗС'}</div>
+              <div class="station-name">
+                ${station.name || 'АЗС'}
+                ${station.name && station.name.includes('Газпром') ? '<span class="brand-badge">Газпром</span>' : ''}
+                ${station.name && station.name.includes('Лукойл') ? '<span class="brand-badge">Лукойл</span>' : ''}
+                ${station.name && station.name.includes('Роснефть') ? '<span class="brand-badge">Роснефть</span>' : ''}
+              </div>
               ${station.address ? `<div class="station-address">${station.address}</div>` : ''}
             </div>
-            <span class="distance">${distance} км</span>
+            ${distance ? `<span class="distance-badge">${distance} км</span>` : ''}
           </div>
-          <div class="queue-row">
-            <span class="queue-indicator ${queueClass}">
+          <div class="queue-section">
+            <span class="queue-badge ${queueClass}">
               <i class="fas fa-users"></i> ${queueText}
             </span>
-            ${weight > 0 && weight < 0.6 ? '<span class="time-ago">Уточняется</span>' : ''}
-            ${timeAgo !== null ? `<span class="time-ago">${timeAgo} мин назад</span>` : ''}
+            ${timeAgo ? `<span class="queue-time">${timeAgo} мин назад</span>` : ''}
+            ${weight > 0 && weight < 0.6 ? '<span class="queue-time">Уточняется</span>' : ''}
           </div>
-          <div class="fuel-tags">${fuelsHtml}</div>
+          <div class="fuel-row">${fuelsHtml}</div>
           <button class="update-btn" data-station-id="${station.id}">
-            <i class="fas fa-pen"></i> Обновить
+            <i class="fas fa-pen"></i> Обновить информацию
           </button>
         </div>
       `;
@@ -1172,19 +1145,11 @@
     }).join('');
     
     document.getElementById('editModal').classList.add('active');
-    
-    if (tg) {
-      tg.BackButton.show();
-    }
   }
 
   function closeModal() {
     document.getElementById('editModal').classList.remove('active');
     editingStationId = null;
-    
-    if (tg) {
-      tg.BackButton.hide();
-    }
   }
 
   async function saveToFirebase(stationId, queue, fuels) {
@@ -1195,41 +1160,37 @@
       updates[`stations/${stationId}/fuels`] = fuels;
       
       await update(ref(database), updates);
-      updateConnectionStatus(true);
-      
-      if (tg) {
-        tg.showPopup({
-          title: 'Сохранено',
-          message: 'Данные обновлены и видны всем пользователям',
-          buttons: [{type: 'ok'}]
-        });
-      }
+      showToast('Данные сохранены и видны всем');
     } catch (error) {
       console.error('Ошибка сохранения:', error);
-      if (tg) {
-        tg.showPopup({
-          title: 'Ошибка',
-          message: 'Не удалось сохранить данные. Проверьте подключение.',
-          buttons: [{type: 'ok'}]
-        });
-      }
+      showToast('Ошибка сохранения');
     }
   }
 
   // Обработчики событий
+  document.getElementById('locationBtn').addEventListener('click', requestGeolocation);
+
+  document.getElementById('searchBtn').addEventListener('click', () => {
+    searchQuery = document.getElementById('searchInput').value.trim();
+    performSearch();
+  });
+
+  document.getElementById('searchInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      searchQuery = e.target.value.trim();
+      performSearch();
+    }
+  });
+
   document.getElementById('searchInput').addEventListener('input', (e) => {
-    searchQuery = e.target.value;
+    searchQuery = e.target.value.trim();
     renderFilteredStations();
   });
 
   document.getElementById('filterBtn').addEventListener('click', () => {
     showOnlyWithQueue = !showOnlyWithQueue;
     const btn = document.getElementById('filterBtn');
-    if (showOnlyWithQueue) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
+    btn.classList.toggle('active', showOnlyWithQueue);
     renderFilteredStations();
   });
 
@@ -1255,33 +1216,20 @@
   });
 
   document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+  
   document.getElementById('editModal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('editModal')) closeModal();
   });
 
-  document.getElementById('refreshGeoBtn').addEventListener('click', () => {
-    requestGeolocation();
-  });
-
-  document.getElementById('locationDisplay').addEventListener('click', () => {
-    requestGeolocation();
-  });
-
-  setInterval(() => {
-    if (currentLat && currentLon) {
-      fetchAllNearbyStations(currentLat, currentLon);
-    }
-  }, 600000);
-
-  const connectedRef = ref(database, '.info/connected');
-  onValue(connectedRef, (snap) => {
-    updateConnectionStatus(snap.val() === true);
-  });
-
-  // Запуск приложения
-  initTelegramApp();
+  // Запуск
   listenToStations();
-  requestGeolocation();
+  
+  // Автоматически запрашиваем геолокацию при загрузке
+  setTimeout(() => {
+    if (!currentLat) {
+      requestGeolocation();
+    }
+  }, 500);
 </script>
 </body>
 </html>
